@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Испанские глаголы с изменениями: тренажёр</title>
+<style>
+:root{--bg:#f3f5f9;--fg:#101828;--mut:#5b6679;--card:#fff;--bd:#d5dbe6;--ac:#2f4bd8;--acfg:#fff;--ok:#0f7b5f;--okbg:#d9f4ea;--bad:#c0392b;--badbg:#fde4e0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1320;--fg:#e8ecf6;--mut:#9aa5bd;--card:#171e30;--bd:#2a3350;--ac:#8ea2ff;--acfg:#0e1320;--ok:#5fd3ae;--okbg:#123a30;--bad:#ff8a7a;--badbg:#431d19;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1320;--fg:#e8ecf6;--mut:#9aa5bd;--card:#171e30;--bd:#2a3350;--ac:#8ea2ff;--acfg:#0e1320;--ok:#5fd3ae;--okbg:#123a30;--bad:#ff8a7a;--badbg:#431d19;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+#app{max-width:620px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:26px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
+.sub{margin:0 0 16px;color:var(--mut);font-size:14px}
+.bar{height:10px;border-radius:6px;background:var(--bd);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ok);transition:width .35s}
+#stat{font-size:13px;color:var(--mut);margin:6px 0 14px}
+.tabs,.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+button{font:inherit;cursor:pointer;color:var(--fg);background:var(--card);border:1.5px solid var(--bd);border-radius:10px;padding:9px 14px}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.tabs button{flex:1;font-weight:600}
+.tabs button.on{background:var(--ac);color:var(--acfg);border-color:var(--ac)}
+.chips button{font-size:13px;padding:5px 11px;border-radius:99px}
+.chips button.on{border-color:var(--ac);color:var(--ac);font-weight:600}
+.card{background:var(--card);border:1.5px solid var(--bd);border-radius:18px;padding:32px 20px;text-align:center;margin:14px 0;min-height:170px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.big{font-size:34px;font-weight:800;line-height:1.15;overflow-wrap:anywhere}
+.ru{font-size:22px}
+.hint{color:var(--mut);font-size:14px}
+.sp{font-size:26px;letter-spacing:.18em;font-weight:600;color:var(--mut)}
+.yo{font-size:20px;font-weight:600;color:var(--ac)}
+.row{display:flex;gap:10px}
+.row button{flex:1;font-weight:600;padding:13px}
+button.good{background:var(--okbg);border-color:var(--ok);color:var(--ok)}
+button.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.opts{display:grid;gap:8px}
+.opts.p{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+.opts button{text-align:left;padding:13px 14px;font-size:17px}
+.opts.p button{text-align:center;font-weight:600}
+.opts button.ok{background:var(--okbg);border-color:var(--ok)}
+.opts button.wr{background:var(--badbg);border-color:var(--bad)}
+.opts button:disabled{cursor:default;color:var(--fg)}
+input{width:100%;font:inherit;font-size:22px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--bd);background:var(--card);color:var(--fg);text-align:center}
+.fb{border-radius:14px;padding:14px 16px;margin:12px 0}
+.fb.okb{background:var(--okbg)}
+.fb.badb{background:var(--badbg)}
+.note{font-size:13px;color:var(--mut);margin-top:6px}
+.go{width:100%;background:var(--ac);color:var(--acfg);border-color:var(--ac);font-weight:600;padding:13px}
+.tag{display:inline-block;font-weight:600;color:var(--mut)}
+</style>
+</head>
+<body>
+<div id="app">
+<h1>Глаголы с изменениями</h1>
+<p class="sub">Слово считается выученным после двух верных ответов подряд. Ошибка возвращает его в очередь.</p>
+<div class="bar"><i id="fill"></i></div>
+<div id="stat"></div>
+<div class="tabs" id="tabs"></div>
+<div class="chips" id="chips"></div>
+<div id="main"></div>
+</div>
+<script>
+const P={a:'e → ie',b:'o → ue',g:'u → ue',h:'o → hue',c:'e → i',d:'-zco',f:'-uyo'};
+const PG={1:'a',2:'b',3:'c'};
+const GN=['','e → ie','o → ue','e → i','особые'];
+const RAW={1:`tropezar|спотыкаться|a|tropiezo
+encender|включать (свет, прибор)|a|enciendo
+sentir(se)|чувствовать (себя)|a|siento
+divertir(se)|развлекаться, веселиться|a|me divierto
+despertar(se)|просыпаться|a|me despierto
+empezar|начинать|a|empiezo
+herir|ранить|a|hiero
+preferir|предпочитать|a|prefiero
+sentarse|садиться|a|me siento
+entender|понимать|a|entiendo
+regar|поливать|a|riego
+advertir|предупреждать; замечать|a|advierto
+convertir(se)|превращать(ся)|a|convierto
+perder|терять; проигрывать|a|pierdo
+calentar|греть, нагревать|a|caliento
+confesar|признаваться|a|confieso
+recomendar|рекомендовать|a|recomiendo
+atravesar|пересекать, переходить|a|atravieso
+cerrar|закрывать|a|cierro
+atender|обслуживать; уделять внимание|a|atiendo
+nevar|идти (о снеге)|a|nieva
+defender|защищать|a|defiendo
+pensar|думать|a|pienso
+mentir|лгать|a|miento
+volver|возвращаться|b|vuelvo
+dormir|спать|b|duermo`,
+2:`soltar|отпускать, выпускать|b|suelto
+encontrar|находить, встречать|b|encuentro
+morder|кусать|b|muerdo
+morir|умирать|b|muero
+mostrar|показывать|b|muestro
+acostarse|ложиться спать|b|me acuesto
+colgar|вешать|b|cuelgo
+resolver|решать (проблему)|b|resuelvo
+soñar|мечтать; видеть сон|b|sueño
+consolar|утешать|b|consuelo
+contar|рассказывать; считать|b|cuento
+rodar|катиться; снимать (кино)|b|ruedo
+costar|стоить|b|cuesta
+recordar|помнить, вспоминать|b|recuerdo
+sonar|звучать; звонить|b|suena
+doler|болеть|b|duele
+acordarse (de)|помнить (о), соглашаться|b|me acuerdo
+soler|иметь обыкновение|b|suelo
+llover|идти (о дожде)|b|llueve
+jugar|играть|g|juego`,
+3:`oler|пахнуть|h|huelo
+probar|пробовать; дегустировать|b|pruebo
+rogar|просить, умолять|b|ruego
+servir|служить; подавать|c|sirvo
+seguir|следовать; продолжать|c|sigo
+rendir|сдавать(ся); отдавать|c|rindo
+reñir|ссориться; ругать|c|riño
+pedir|просить; заказывать|c|pido
+impedir|мешать, препятствовать|c|impido
+medir|измерять|c|mido
+vestir(se)|одевать(ся)|c|me visto
+elegir|выбирать|c|elijo
+reír|смеяться|c|río
+sonreír|улыбаться|c|sonrío
+repetir|повторять|c|repito
+despedirse (de)|прощаться (с)|c|me despido
+corregir|исправлять|c|corrijo`,
+4:`conocer|знать, быть знакомым|d|conozco
+traducir|переводить|d|traduzco
+pertenecer|принадлежать|d|pertenezco
+aparecer|появляться|d|aparezco
+ofrecer|предлагать|d|ofrezco
+producir|производить|d|produzco
+reconocer|узнавать; признавать|d|reconozco
+carecer|не иметь, нуждаться|d|carezco
+obedecer|подчиняться, слушаться|d|obedezco
+introducir|вводить, вставлять|d|introduzco
+merecer|заслуживать|d|merezco
+parecer|казаться|d|parezco
+nacer|рождаться|d|nazco
+conducir|водить (машину)|d|conduzco
+construir|строить|f|construyo
+destruir|разрушать|f|destruyo
+incluir|включать|f|incluyo
+excluir|исключать|f|excluyo
+constituir|составлять, учреждать|f|constituyo
+disminuir|уменьшать(ся)|f|disminuyo
+contribuir|способствовать, вносить вклад|f|contribuyo
+huir|убегать, бежать|f|huyo`};
+const D=[];
+for(const g in RAW)RAW[g].split('\n').forEach(l=>{const x=l.split('|');D.push({es:x[0],ru:x[1],p:x[2],yo:x[3],g:+g})});
+const $=id=>document.getElementById(id);
+const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const nz=s=>s.toLowerCase().replace(/ñ/g,'§').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/§/g,'ñ').replace(/\s*\(.*?\)/g,'').trim();
+const TABS=[['cards','Карточки'],['quiz','Выбор'],['type','Ввод'],['pat','Тип']];
+const CH=['Все слова','Группа 1','Группа 2','Группа 3','Группа 4'];
+let mode='cards',grp=0,pool=[],st={},queue=[],cur=null,flip=false,ans=null,q=null,lastOk=false,typed='';
+function init(){pool=D.filter(w=>!grp||w.g==grp);st={};pool.forEach(w=>st[w.es]=0);queue=[];next()}
+function next(){
+  flip=false;ans=null;typed='';
+  queue=queue.filter(w=>st[w.es]<2);
+  if(!queue.length)queue=sh(pool.filter(w=>st[w.es]<2));
+  cur=queue.shift()||null;
+  if(cur)q={dir:Math.random()<.5,opts:sh([cur,...sh(D.filter(w=>w!==cur&&w.ru!==cur.ru)).slice(0,3)])};
+  render();
+}
+function grade(ok){lastOk=ok;if(ok)st[cur.es]++;else{st[cur.es]=0;queue.splice(Math.min(3,queue.length),0,cur)}}
+function setMode(m){mode=m;ans=null;flip=false;typed='';render()}
+function setGrp(i){grp=i;init()}
+function note(w){return ''}
+function fb(){return '<div class="fb '+(lastOk?'okb':'badb')+'"><b>'+cur.es+'</b> — '+cur.ru+'<br><span class="yo">yo '+cur.yo+'</span> <span class="tag">('+P[cur.p]+')</span>'+note(cur)+'</div><button class="go" onclick="next()">Дальше</button>'}
+function pick(i){if(ans!==null)return;ans=i;grade(q.opts[i]===cur);render()}
+function pickP(c){if(ans!==null)return;ans=c;grade(c===cur.p);render()}
+function check(){
+  const el=$('inp');if(!el||ans!==null)return;
+  typed=el.value;const v=nz(typed).replace(/ de$/,'');if(!v)return;
+  const okA=[nz(cur.es)];if(cur.es.includes('(se)'))okA.push(nz(cur.es)+'se');
+  ans=1;grade(okA.includes(v));render();
+}
+function render(){
+  const L=pool.filter(w=>st[w.es]>=2).length;
+  $('fill').style.width=(100*L/pool.length)+'%';
+  $('stat').textContent='Выучено '+L+' из '+pool.length;
+  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(t[0]==mode?'on':'')+'" onclick="setMode(\''+t[0]+'\')">'+t[1]+'</button>').join('');
+  $('chips').innerHTML=CH.map((c,i)=>'<button class="'+(i==grp?'on':'')+'" onclick="setGrp('+i+')">'+c+'</button>').join('');
+  const m=$('main');
+  if(!cur){m.innerHTML='<div class="card"><div class="big">Все '+pool.length+' слов выучены!</div><div class="hint">Выбери другую группу или пройди всё заново.</div></div><button class="go" onclick="init()">Пройти заново</button>';return}
+  let h='';
+  if(mode=='cards'){
+    const fr=q.dir?cur.ru:cur.es,bk=q.dir?cur.es:cur.ru;
+    h='<div class="card" tabindex="0" onclick="flip=!flip;render()">'+(flip?'<div class="big'+(q.dir?'':' ru')+'">'+bk+'</div><div class="yo">yo '+cur.yo+'</div><div class="tag">'+P[cur.p]+'</div>'+note(cur):'<div class="big'+(q.dir?' ru':'')+'">'+fr+'</div><div class="hint">нажми, чтобы увидеть ответ</div>')+'</div>';
+    if(flip)h+='<div class="row"><button class="bad" onclick="grade(false);next()">Ещё раз</button><button class="good" onclick="grade(true);next()">Знаю</button></div>';
+  }else if(mode=='quiz'){
+    const t=w=>q.dir?w.ru:w.es;
+    h='<div class="card"><div class="big'+(q.dir?'':' ru')+'">'+(q.dir?cur.es:cur.ru)+'</div><div class="hint">'+(q.dir?'выбери перевод':'выбери глагол по-испански')+'</div></div><div class="opts">'+
+      q.opts.map((w,i)=>'<button '+(ans!==null?'disabled ':'')+'class="'+(ans!==null?(w===cur?'ok':(i===ans?'wr':'')):'')+'" onclick="pick('+i+')">'+t(w)+'</button>').join('')+'</div>'+(ans!==null?fb():'');
+  }else if(mode=='type'){
+    const b=nz(cur.es);
+    h='<div class="card"><div class="big ru">'+cur.ru+'</div><div class="sp">'+b[0]+'_'.repeat(b.length-1)+'</div></div>'+
+      (ans===null?'<input id="inp" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="напиши по-испански" onkeydown="if(event.key===\'Enter\'){event.stopPropagation();check()}"><div style="height:10px"></div><button class="go" onclick="check()">Проверить</button><div class="note">Акценты можно не ставить.</div>':'<div class="note">Ты написала: '+(typed.replace(/</g,'&lt;')||'—')+'</div>'+fb());
+  }else{
+    h='<div class="card"><div class="big">'+cur.es+'</div><div class="hint">'+cur.ru+'</div><div class="hint">как меняется глагол в форме yo?</div></div><div class="opts p">'+
+      Object.keys(P).map(c=>'<button '+(ans!==null?'disabled ':'')+'class="'+(ans!==null?(c===cur.p?'ok':(c===ans?'wr':'')):'')+'" onclick="pickP(\''+c+'\')">'+P[c]+'</button>').join('')+'</div>'+(ans!==null?fb():'');
+  }
+  m.innerHTML=h;
+  if(mode=='type'&&ans===null){const i=$('inp');if(i)i.focus()}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&ans!==null&&mode!=='cards'&&cur)next()});
+init();
+</script>
+</body>
+</html>
